@@ -1,6 +1,5 @@
 package com.example.santiago.cleanairwalk;
 
-import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -8,6 +7,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -19,16 +22,66 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 
-public class MainActivity extends ActionBarActivity implements OnMapReadyCallback{
+//public class MainActivity extends ActionBarActivity implements OnMapReadyCallback{
+public class MainActivity extends ActionBarActivity
+        implements ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
+
+    private GoogleApiClient mGoogleApiClient;
+    private Location mLastLocation;
+    private String mLatitudeText;
+    private String mLongitudeText;
 
     MapFragment mapFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        buildGoogleApiClient();
 
+
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if( mLastLocation != null ){
+            mLatitudeText = String.valueOf(mLastLocation.getLatitude());
+            mLongitudeText = String.valueOf(mLastLocation.getLongitude());
+        }
+
+//        Log.e("GET LAT LONG","lat="+mLongitudeText+"long="+mLongitudeText);
+
+        mapFragment = MapFragment.newInstance();
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        //TO DO averiguar que se debe hacer
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        //TO DO TODO
+    }
+    //    @Override
+//    public void onLocationChanged(Location location) {
+//        Location newLocation = location
+//        mLatitudeText = String.valueOf(newLocation.getLatitude());
+//        mLongitudeText = String.valueOf(newLocation.getLongitude());
+//    }
+
+    protected synchronized void buildGoogleApiClient(){
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+//        Log.e("GET LAT LONG","lat="+mLongitudeText+"long="+mLongitudeText);
+        mGoogleApiClient.connect();
     }
 
 
@@ -63,18 +116,11 @@ public class MainActivity extends ActionBarActivity implements OnMapReadyCallbac
 
         googleMap.setMyLocationEnabled(true);
 
-        Criteria criteria = new Criteria();
-
-        String provider = locationManager.getBestProvider(criteria,true);
-
-        Location lastKnownlocation = locationManager.getLastKnownLocation(provider);
-
-
         LatLng loc_latLong_obj =
-                new LatLng(lastKnownlocation.getLatitude(),lastKnownlocation.getLongitude());
+                new LatLng(Double.parseDouble(mLatitudeText) ,Double.parseDouble(mLongitudeText));
 
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(
-                CameraPosition.fromLatLngZoom(loc_latLong_obj,15)));
+                CameraPosition.fromLatLngZoom(loc_latLong_obj, 15)));
 
         googleMap.addMarker(new MarkerOptions()
                 .position(loc_latLong_obj)
