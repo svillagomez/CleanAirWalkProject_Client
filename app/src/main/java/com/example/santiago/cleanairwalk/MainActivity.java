@@ -1,10 +1,12 @@
 package com.example.santiago.cleanairwalk;
 
 import android.graphics.Color;
+import android.graphics.Point;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -17,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -43,8 +46,6 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         buildGoogleApiClient();
-
-
     }
 
     @Override
@@ -140,7 +141,34 @@ public class MainActivity extends ActionBarActivity
 // Get back the mutable Polyline
         Polyline polyline = googleMap.addPolyline(rectOptions);
 
-        googleMap = mapFragment.getMap();
+//        googleMap = mapFragment.getMap();
+
+
+        myGoogleMap.setOnMapClickListener( new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                Projection projection = myGoogleMap.getProjection();
+                Point coordinate = projection.toScreenLocation(latLng);
+
+                Log.e("coord son:", latLng.latitude + " " + latLng.longitude);
+                Log.d("UNO","DOS");
+            }
+        });
+
+        myGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                Projection projection = myGoogleMap.getProjection();
+                Point coordinate = projection.toScreenLocation(latLng);
+
+//                Log.e("coord son:", latLng.latitude + " " + latLng.longitude);
+//                Log.d("UNO","DOS");
+
+                myGoogleMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("Marker"));
+            }
+        });
 
 
         String url = getMapsApiDirectionsUrl();

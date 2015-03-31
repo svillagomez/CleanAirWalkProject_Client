@@ -1,7 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:gravity="bottom">
 
     <!--&lt;!&ndash;<?xml version="1.0" encoding="utf-8"?>&ndash;&gt;-->
     <fragment
@@ -15,6 +16,21 @@
         <!--android:text="@string/hello_blank_fragment" />-->
 
     </fragment>
+    <ImageButton
+        android:layout_width="@dimen/navigation_button_width"
+        android:layout_height="@dimen/navigation_button_height"
+        android:src="@drawable/navigation_button"
+        android:scaleType="fitXY"
+        android:background="@android:color/tertiary_text_light"
+        android:layout_marginLeft="@dimen/abc_dropdownitem_text_padding_right"
+        android:layout_marginStart="17dp"
+        android:layout_marginBottom="@dimen/navigation_button_height"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"/>
+
+
+
 
 
 </RelativeLayout>
