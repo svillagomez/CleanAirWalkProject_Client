@@ -1,11 +1,13 @@
 package com.example.santiago.cleanairwalk;
 
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,9 +24,10 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 
+
 //public class MainActivity extends ActionBarActivity implements OnMapReadyCallback{
 public class MainActivity extends ActionBarActivity
-        implements ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback {
+        implements ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback{
 
     private GoogleApiClient mGoogleApiClient;
     private Location mLastLocation;
@@ -32,6 +35,9 @@ public class MainActivity extends ActionBarActivity
     private String mLongitudeText;
 
     MapFragment mapFragment;
+
+    GoogleMap myGoogleMap;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,10 +56,9 @@ public class MainActivity extends ActionBarActivity
             mLongitudeText = String.valueOf(mLastLocation.getLongitude());
         }
 
-//        Log.e("GET LAT LONG","lat="+mLongitudeText+"long="+mLongitudeText);
-
         mapFragment = MapFragment.newInstance();
         mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        myGoogleMap = mapFragment.getMap();
         mapFragment.getMapAsync(this);
     }
 
@@ -79,8 +84,6 @@ public class MainActivity extends ActionBarActivity
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
-//        Log.e("GET LAT LONG","lat="+mLongitudeText+"long="+mLongitudeText);
         mGoogleApiClient.connect();
     }
 
@@ -107,9 +110,6 @@ public class MainActivity extends ActionBarActivity
         return super.onOptionsItemSelected(item);
     }
 
-
-
-
     @Override
     public void onMapReady(GoogleMap googleMap) {
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
@@ -134,9 +134,47 @@ public class MainActivity extends ActionBarActivity
                 .add(new LatLng(-37.8117041,144.9462382))  // Same longitude, and 16km to the south
                 .add(new LatLng(-37.7897669, 144.9411422)); // Closes the polyline.
 
+        rectOptions.width(8);
+        rectOptions.color(Color.RED);
+
 // Get back the mutable Polyline
         Polyline polyline = googleMap.addPolyline(rectOptions);
 
+        googleMap = mapFragment.getMap();
+
+
+        String url = getMapsApiDirectionsUrl();
+        GetDirectionClass downloadTask = new GetDirectionClass(myGoogleMap);
+        downloadTask.execute(url);
     }
 
+//    ESTO DEBERIA IR EN OTRO ARCHIVO
+
+    private static final LatLng BOURKE = new LatLng(-37.881113,145.174000);
+
+    private String getMapsApiDirectionsUrl() {
+
+//        https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=API_KEY
+
+
+//        String waypoints = "waypoints=optimize:true|"
+//                + BOURKE.latitude + "," + BOURKE.longitude;
+//
+//        String sensor = "sensor=false";
+//        String params = waypoints + "&" + sensor;
+//        String output = "json";
+//        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
+
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=-37.818563,144.959880&destination=-37.800720,144.966958";
+//        String url_2 = "https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=AIzaSyBjaqV-AszBVCM-gLEHsWUNwPfW_XbFbP8";
+
+        return url;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event);
+
+
+    }
 }
