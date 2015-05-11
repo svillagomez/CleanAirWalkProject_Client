@@ -17,20 +17,48 @@
 
     </fragment>
     <ImageButton
+        android:id="@+id/directions_button"
         android:layout_width="@dimen/navigation_button_width"
         android:layout_height="@dimen/navigation_button_height"
         android:src="@drawable/navigation_button"
         android:scaleType="fitXY"
-        android:background="@android:color/tertiary_text_light"
+        android:background="@color/button_material_light"
         android:layout_marginLeft="@dimen/abc_dropdownitem_text_padding_right"
         android:layout_marginStart="17dp"
         android:layout_marginBottom="@dimen/navigation_button_height"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"/>
+        android:layout_alignParentStart="true"
+        android:visibility="invisible" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="invisible"
+        android:id="@+id/decisions_btns_layout">
 
-
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="Cancel"
+            android:id="@+id/btn_dir_cancel"
+            android:layout_weight="1"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:text="OK"
+            android:id="@+id/btn_dir_ok"
+            android:layout_weight="1"/>
+    </LinearLayout>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="invisible"
+        android:src="@drawable/abc_btn_radio_to_on_mtrl_000"
+        android:id="@+id/centered_icon"
+        android:background="@null"/>
 
 
 </RelativeLayout>

@@ -31,7 +31,10 @@ public class GetDirectionClass extends AsyncTask<String,Void,String> {
 
         try{
             MyHttpConnection http_obj = new MyHttpConnection();
+//            rcvdData = http_obj.read_Url(url_param[0]);
+//            Log.e("sera",url_param[0].toString());
             rcvdData = http_obj.read_Url(url_param[0]);
+
         }
         catch (Exception e){
             Log.d("Error in Get Direction", e.toString());
@@ -58,7 +61,9 @@ public class GetDirectionClass extends AsyncTask<String,Void,String> {
             List<List<HashMap<String, String>>> routes = null;
 
             try {
+//                Log.e("chanfle",jsonData.toString());
                 jObject = new JSONObject(jsonData[0]);
+//                Log.e("datis",jsonData[0]);
                 RouteJsonParser parser = new RouteJsonParser();
                 routes = parser.parse(jObject);
             } catch (Exception e) {
