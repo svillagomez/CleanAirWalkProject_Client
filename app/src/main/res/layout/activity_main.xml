@@ -16,13 +16,111 @@
         <!--android:text="@string/hello_blank_fragment" />-->
 
     </fragment>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:paddingRight="20dp"
+        android:paddingLeft="20dp"
+        android:paddingTop="10dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:width="20dp"
+                android:height="15dp"
+                android:background="@android:color/holo_green_light"
+                android:clickable="false"/>
+
+            <Button
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:width="20dp"
+                android:height="15dp"
+                android:background="@android:color/holo_orange_light"
+                android:clickable="false"/>
+            <Button
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:width="20dp"
+                android:height="15dp"
+                android:background="@android:color/holo_orange_dark"
+                android:clickable="false"/>
+            <Button
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:width="20dp"
+                android:height="15dp"
+                android:background="@android:color/holo_red_light"
+                android:clickable="false"/>
+
+            <Button
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:width="20dp"
+                android:height="15dp"
+                android:background="@android:color/transparent"
+                android:clickable="false"
+                android:text="ug/m3"
+                android:textSize="12dp"
+                android:layout_gravity="center_horizontal"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:text=""
+                android:id="@+id/range_1"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/pollution_indicator_text_size"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:text=""
+                android:id="@+id/range_2"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/pollution_indicator_text_size"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:text=""
+                android:id="@+id/range_3"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/pollution_indicator_text_size"
+                android:layout_gravity="center_horizontal"/>
+            <TextView
+                android:layout_width="@dimen/pollution_indicator_layout_width"
+                android:layout_height="@dimen/pollution_indicator_layout_height"
+                android:text=""
+                android:id="@+id/range_4"
+                android:textColor="@android:color/black"
+                android:textSize="@dimen/pollution_indicator_text_size"
+                android:layout_gravity="center_horizontal"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
     <ImageButton
         android:id="@+id/directions_button"
         android:layout_width="@dimen/navigation_button_width"
         android:layout_height="@dimen/navigation_button_height"
-        android:src="@drawable/navigation_button"
+        android:src="@drawable/road_man_small"
         android:scaleType="fitXY"
-        android:background="@color/button_material_light"
+        android:background="@null"
         android:layout_marginLeft="@dimen/abc_dropdownitem_text_padding_right"
         android:layout_marginStart="17dp"
         android:layout_marginBottom="@dimen/navigation_button_height"
@@ -36,7 +134,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:visibility="invisible"
-        android:id="@+id/decisions_btns_layout">
+        android:id="@+id/decisions_btns_layout"
+        android:layout_centerInParent="true">
 
         <Button
             android:layout_width="wrap_content"
@@ -51,6 +150,7 @@
             android:id="@+id/btn_dir_ok"
             android:layout_weight="1"/>
     </LinearLayout>
+
     <ImageButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

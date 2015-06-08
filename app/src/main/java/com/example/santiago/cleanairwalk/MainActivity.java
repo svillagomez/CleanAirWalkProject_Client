@@ -1,11 +1,13 @@
 package com.example.santiago.cleanairwalk;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -22,14 +25,19 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-
-//public class MainActivity extends ActionBarActivity implements OnMapReadyCallback{
+/**
+ * Created by santiago on 7/05/15.
+ *
+ * Name : MainActivity type : class
+ * Usage: Class that executes main logic of Android app
+ */
 public class MainActivity extends ActionBarActivity
         implements ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, OnMapReadyCallback{
 
@@ -41,12 +49,12 @@ public class MainActivity extends ActionBarActivity
 
     MapFragment mapFragment;
 
+    //A Google map instance
     GoogleMap myGoogleMap;
 
-
-//    Marker my_centered_marker;
     private ImageButton centered_btn_layout;
 
+    //    buttons to handle route requests on screen
     private Button coord_ok;
     private Button coord_cancel;
 
@@ -58,9 +66,18 @@ public class MainActivity extends ActionBarActivity
     private Marker marker_end;
 
     private GetRouteClass routing_task;
+    private GetDirectionClass google_route_task;
     private LinearLayout btns_layout_view;
 
-//    Fragment buttons_layout_fragment;
+    private ErrorWindow errors_window;
+
+    // used to display pollution value ranges
+    private TextView threshold_1;
+    private TextView threshold_2;
+    private TextView threshold_3;
+    private TextView threshold_4;
+
+    private GetPollutionClass get_max_value_task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +86,12 @@ public class MainActivity extends ActionBarActivity
         buildGoogleApiClient();
     }
 
+    /**
+     * method : onConnected
+     * usage: draw map instance once is is correctly loaded
+     * params: bundle
+     * return: void
+     */
     @Override
     public void onConnected(Bundle bundle) {
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -84,21 +107,16 @@ public class MainActivity extends ActionBarActivity
         mapFragment.getMapAsync(this);
     }
 
+
     @Override
     public void onConnectionSuspended(int i) {
-        //TO DO averiguar que se debe hacer
+        //TO DO
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
         //TO DO TODO
     }
-    //    @Override
-//    public void onLocationChanged(Location location) {
-//        Location newLocation = location
-//        mLatitudeText = String.valueOf(newLocation.getLatitude());
-//        mLongitudeText = String.valueOf(newLocation.getLongitude());
-//    }
 
     protected synchronized void buildGoogleApiClient(){
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -110,6 +128,12 @@ public class MainActivity extends ActionBarActivity
     }
 
 
+    /**
+     * method : onCreateOptionsMenu
+     * usage: inflate options windows
+     * params: menu type Menu: the options
+     * return: boolean default value
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -117,6 +141,13 @@ public class MainActivity extends ActionBarActivity
         return true;
     }
 
+
+    /**
+     * method : onOptionsItemSelected
+     * usage: handle tap request on options menu
+     * params: a menu item
+     * return: boolean default value
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -126,25 +157,37 @@ public class MainActivity extends ActionBarActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent p = new Intent(this,Prefs.class);
+            startActivity(p);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * method : onMapReady
+     * usage: set functionality of items when map s ready to use
+     * params: googleMap type GoogleMap: the Google map instance
+     * return: void
+     */
     @Override
     public void onMapReady(final GoogleMap googleMap) {
-
-
         LocationManager locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
 
-//        my_centered_marker = myGoogleMap.addMarker( new MarkerOptions()
-//                        .position(myGoogleMap.getCameraPosition().target)
-//                        .visible(false)
-//        );
+        getThresholdTextViewReference();
+        setDefaultThresholds();
+
+        queryMaxPollutionValue();
 
         coord_ok = (Button) findViewById(R.id.btn_dir_ok);
 
+
+        /**
+         * method : setOnClickListener
+         * usage: set functionality of "OK " button
+         * params: View.OnClickListener()
+         */
         coord_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,18 +202,23 @@ public class MainActivity extends ActionBarActivity
                 else if(end_coordinates == null){
                     marker_end = myGoogleMap.addMarker(new MarkerOptions()
                             .position(actual_position)
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.flag_arrival_small))
                             .title("Destination"));
                     end_coordinates = new LatLng(actual_position.latitude,actual_position.longitude);
-                    coord_ok.setText("GO!!");
-                    coord_ok.setTextColor(Color.GREEN);
+                    coord_ok.setText("!!GO!!");
+                    coord_ok.setTextColor(Color.MAGENTA);
                 }
                 else{
                     String url_python = getMapsApiDirectionsUrl(start_coordinates,end_coordinates);
-                    routing_task = new GetRouteClass(myGoogleMap);
+                    routing_task = new GetRouteClass(myGoogleMap,marker_end);
                     routing_task.execute(url_python);
+
+                    queryGoogleMapsRoute(start_coordinates,end_coordinates);
 //                    my_centered_marker.setVisible(false);
                     coord_ok.setVisibility(View.INVISIBLE);
                     centered_btn_layout.setVisibility(View.INVISIBLE);
+                    coord_cancel.setText("DONE!!");
+                    directions_btn.setVisibility(View.INVISIBLE);
                 }
 
             }
@@ -178,6 +226,11 @@ public class MainActivity extends ActionBarActivity
 
         coord_cancel = (Button) findViewById(R.id.btn_dir_cancel);
 
+        /**
+         * method : setOnClickListener
+         * usage: set functionality of "CANCEL " button
+         * params: View.OnClickListener()
+         */
         coord_cancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,6 +238,8 @@ public class MainActivity extends ActionBarActivity
                 coord_ok.setText("OK");
                 coord_ok.setTextColor(Color.BLACK);
                 centered_btn_layout.setVisibility(View.INVISIBLE);
+                coord_cancel.setText("Cancel");
+                directions_btn.setVisibility(View.VISIBLE);
 
                 if (marker_start != null) {
                     marker_start.remove();
@@ -195,6 +250,10 @@ public class MainActivity extends ActionBarActivity
 
                 if(routing_task != null) {
                     routing_task.remove_route();
+                }
+
+                if(google_route_task != null){
+                    google_route_task.remove_google_route();
                 }
                 if(btns_layout_view != null) {
                     btns_layout_view.setVisibility(View.INVISIBLE);
@@ -210,6 +269,7 @@ public class MainActivity extends ActionBarActivity
         LatLng loc_latLong_obj =
                 new LatLng(Double.parseDouble(mLatitudeText) ,Double.parseDouble(mLongitudeText));
 
+//        move camera to the current/last location
         googleMap.moveCamera(CameraUpdateFactory.newCameraPosition(
                 CameraPosition.fromLatLngZoom(loc_latLong_obj, 15)));
 
@@ -221,6 +281,12 @@ public class MainActivity extends ActionBarActivity
         directions_btn = (ImageButton) findViewById(R.id.directions_button);
         directions_btn.setVisibility(View.VISIBLE);
 
+
+        /**
+         * method : setOnClickListener
+         * usage: set functionality of "directions " button
+         * params: View.OnClickListener()
+         */
         directions_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -239,100 +305,86 @@ public class MainActivity extends ActionBarActivity
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 LatLng centerOfMap;
-//                Log.d("coord",myGoogleMap.getCameraPosition().target.toString());
 //                my_centered_marker.setPosition(myGoogleMap.getCameraPosition().target);
             }
         });
-
-
-
-
-////      add marker to defaul init location
-//        googleMap.addMarker(new MarkerOptions()
-//                .position(loc_latLong_obj)
-//                .title("Marker"));
-
-
-//        PolylineOptions rectOptions = new PolylineOptions()
-//                .add(new LatLng(-37.7897669, 144.9411422))
-//                .add(new LatLng(-37.7911086,144.9785698))  // North of the previous point, but at the same longitude
-//                .add(new LatLng(-37.8100244,144.9769556))  // Same latitude, and 30km to the west
-//                .add(new LatLng(-37.8117041,144.9462382))  // Same longitude, and 16km to the south
-//                .add(new LatLng(-37.7897669, 144.9411422)); // Closes the polyline.
-//
-//        rectOptions.width(8);
-//        rectOptions.color(Color.RED);
-//
-////Get back the mutable Polyline
-//        Polyline polyline = googleMap.addPolyline(rectOptions);
-
-//        googleMap = mapFragment.getMap();
-
-
-//        myGoogleMap.setOnMapClickListener( new GoogleMap.OnMapClickListener() {
-//            @Override
-//            public void onMapClick(LatLng latLng) {
-//                Projection projection = myGoogleMap.getProjection();
-//                Point coordinate = projection.toScreenLocation(latLng);
-//
-//                Log.e("coord son:", latLng.latitude + " " + latLng.longitude);
-//                Log.d("UNO","DOS");
-//            }
-//        });
-
-//        myGoogleMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-//            @Override
-//            public void onMapLongClick(LatLng latLng) {
-//                Projection projection = myGoogleMap.getProjection();
-//                Point coordinate = projection.toScreenLocation(latLng);
-//
-//                Log.e("coord son:", latLng.latitude + " " + latLng.longitude);
-//                Log.d("UNO","DOS");
-//
-//                myGoogleMap.addMarker(new MarkerOptions()
-//                        .position(latLng)
-//                        .title("Marker"));
-//            }
-//        });
-
-        HeatMap.addHetMap(myGoogleMap);
-
-//        String url_python = getMapsApiDirectionsUrl();
-//        GetRouteClass task = new GetRouteClass(myGoogleMap);
-//        task.execute(url_python);
-//        String url = getMapsApiDirectionsUrl();
-//        GetDirectionClass downloadTask = new GetDirectionClass(myGoogleMap);
-//        downloadTask.execute(url);
     }
 
-//    ESTO DEBERIA IR EN OTRO ARCHIVO
 
-//    private static final LatLng BOURKE = new LatLng(-37.881113,145.174000);
-
+    /**
+     * method : getMapsApiDirectionsUrl
+     * usage: construct the whole URL including parameters (own server) to query a route
+     * params: Latitude and longitude values chosen by user
+     */
     private String getMapsApiDirectionsUrl(LatLng start, LatLng end) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String server_ip;
+        server_ip = prefs.getString("serverIP","127.0.0.2");
+        String server_port;
+        server_port = prefs.getString("ServerPort","9999");
 
-//        https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=API_KEY
-
-
-//        String waypoints = "waypoints=optimize:true|"
-//                + BOURKE.latitude + "," + BOURKE.longitude;
-//
-//        String sensor = "sensor=false";
-//        String params = waypoints + "&" + sensor;
-//        String output = "json";
-//        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + params;
-
-
+        String ip_addr = server_ip;
         String start_str_coord = "start="+Double.toString(start.latitude)+"&start="+Double.toString(start.longitude);
         String end_str_coord = "&end="+Double.toString(end.latitude)+"&end="+Double.toString(end.longitude);
-//        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=-37.818563,144.959880&destination=-37.800720,144.966958&waypoints=-37.816313,144.964192|-37.812230,144.962234|-37.813641,144.957277|-37.809099,144.955351|-37.808870,144.957958|-37.806505,144.961499|-37.803351,144.964997|-37.802114,144.966767&mode=bicycling";
-        String url = "http://192.168.1.13:5667/q?";
-        String new_url = "http://192.168.1.13:5667/q?"+start_str_coord+end_str_coord;
 
-        Log.e("ESTo mandaria:",new_url);
-
-//        String url_2 = "https://maps.googleapis.com/maps/api/directions/json?origin=Toronto&destination=Montreal&key=AIzaSyBjaqV-AszBVCM-gLEHsWUNwPfW_XbFbP8";
+        String new_url = "http://"+ip_addr+":"+server_port+"/q?"+start_str_coord+end_str_coord;
         return new_url;
+    }
+
+    /**
+     * method : getGoogleMapsApiDirectionsUrl
+     * usage: constructs the whole URL including parameters (Google server) to query a route
+     * params: Latitude and longitude values chosen by user
+     */
+    private String getGoogleMapsApiDirectionsUrl(LatLng start, LatLng end) {
+        String base_url = "https://maps.googleapis.com/maps/api/directions/json?";
+        String start_coord_str = Double.toString(start.latitude)+","+Double.toString(start.longitude);
+        String end_coord_str = Double.toString(end.latitude)+","+Double.toString(end.longitude);
+
+        String url = base_url + "origin=" + start_coord_str+"&destination="+end_coord_str+"&mode=walking";
+        return url;
+    }
+
+    /**
+     * method : getMaxPollutionQueryUrl
+     * usage: construct the whole URL including parameters (own server) to get pollution value
+     * params: Void
+     */
+    private String getMaxPollutionQueryUrl() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String server_ip;
+        server_ip = prefs.getString("serverIP","127.0.0.2");
+        String server_port;
+        server_port = prefs.getString("ServerPort","9999");
+
+        String ip_addr = server_ip;
+        String param = "maxValue=";
+        String new_url = "http://"+ip_addr+":"+server_port+"/q?"+param;
+        return new_url;
+    }
+
+    /**
+     * method : queryGoogleMapsRoute
+     * usage: make an actual request to plot a Google route
+     * params: latitude and longitude values chosen by user
+     * return: void
+     */
+    private void queryGoogleMapsRoute(LatLng start, LatLng end){
+        String url = getGoogleMapsApiDirectionsUrl(start, end);
+        google_route_task = new GetDirectionClass(myGoogleMap);
+        google_route_task.execute(url);
+    }
+
+    /**
+     * method : queryMaxPollutionValue
+     * usage: make an actual request to display pollution ranges
+     * params: void
+     * return: void
+     */
+    private void queryMaxPollutionValue(){
+        String url = getMaxPollutionQueryUrl();
+        get_max_value_task = new GetPollutionClass(threshold_1,threshold_2,threshold_3,threshold_4);
+        get_max_value_task.execute(url);
     }
 
 
@@ -343,4 +395,33 @@ public class MainActivity extends ActionBarActivity
 
 
     }
+
+
+    /**
+     * method : setDefaultThresholds
+     * usage: set defaults pollutions ranges if no value is provides ( when no connection/response)
+     * params: void
+     * return: void
+     */
+    private void setDefaultThresholds(){
+        threshold_1.setText("< 37.50");
+        threshold_2.setText("< 75.00");
+        threshold_3.setText("< 112.50");
+        threshold_4.setText("< 150.00");
+    }
+
+
+    /**
+     * method : setDefaultThresholds
+     * usage: get the objects to set the pollution thresholds values
+     * params: void
+     * return: void
+     */
+    private void getThresholdTextViewReference(){
+        threshold_1 = (TextView) findViewById(R.id.range_1);
+        threshold_2 = (TextView) findViewById(R.id.range_2);
+        threshold_3 = (TextView) findViewById(R.id.range_3);
+        threshold_4 = (TextView) findViewById(R.id.range_4);
+    }
+
 }

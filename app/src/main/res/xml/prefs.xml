@@ -1,0 +1,20 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:key="preferences_screen"
+    >
+    <PreferenceCategory
+        android:title="por la grandisima">
+        <EditTextPreference
+            android:title="Server IP"
+            android:key="serverIP"
+            android:summary="Enter the ip"
+            android:defaultValue="146.118.96.26"></EditTextPreference>
+
+        <EditTextPreference
+            android:title="Server PORT"
+            android:key="ServerPort"
+            android:summary="Enter the port"
+            android:defaultValue="5678"></EditTextPreference>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

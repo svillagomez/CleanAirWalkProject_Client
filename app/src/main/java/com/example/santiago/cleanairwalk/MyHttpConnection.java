@@ -11,8 +11,19 @@ import java.net.URL;
 
 /**
  * Created by santiago on 31/03/15.
+ *
+ * Name : MyHttpConnection type : class
+ * Usage: Class that stablishes http connection and receive data
  */
+
 public class MyHttpConnection {
+
+    /**
+     * method : read_Url
+     * usage: stablishes a connection and get resonse data
+     * params: dirToMapsApi url
+     * return: String data
+     */
     public String read_Url(String dirToMapsApi) throws IOException{
         String data = "";
 

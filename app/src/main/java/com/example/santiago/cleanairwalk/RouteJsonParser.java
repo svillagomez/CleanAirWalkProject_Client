@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Created by santiago on 31/03/15.
+ * Usage: a route parser class utility for Google directios API requests
  */
 public class RouteJsonParser {
     public List<List<HashMap<String, String>>> parse(JSONObject jObject) {

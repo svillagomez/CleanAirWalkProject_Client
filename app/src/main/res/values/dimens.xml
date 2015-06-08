@@ -5,4 +5,13 @@
 
     <dimen name="navigation_button_width">45dp</dimen>
     <dimen name="navigation_button_height">45dp</dimen>
+
+    <dimen name="pollution_indicator_layout_width">50dp</dimen>
+    <dimen name="pollution_indicator_layout_height">15dp</dimen>
+
+    <dimen name="pollution_indicator_layout_text_width">60dp</dimen>
+    <dimen name="pollution_indicator_layout_text_height">15dp</dimen>
+
+
+    <dimen name="pollution_indicator_text_size">12dp</dimen>
 </resources>
